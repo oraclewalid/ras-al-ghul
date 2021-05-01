@@ -1,4 +1,3 @@
-use bytes::Bytes;
 use std::fmt;
 
 #[derive(Debug, Clone)]

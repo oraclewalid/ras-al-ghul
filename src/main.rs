@@ -53,10 +53,11 @@ async fn process(mut socket: TcpStream, tx: Sender<CommandWrapper>) {
         .await
         .expect("failed to read data from socket");
 
-    let res = test(tx).await;
-    if n == 0 {
-        return;
-    }
+    let cmdRaw = String::from_utf8(buf[0..(n-1)].to_vec()).unwrap();
+
+    let cmd = simple_command_parser(cmdRaw);
+
+    let res = test(tx, cmd).await;
 
     socket
         .write_all(res.to_string().as_bytes())
@@ -64,19 +65,26 @@ async fn process(mut socket: TcpStream, tx: Sender<CommandWrapper>) {
         .expect("failed to write data to socket");
 }
 
-async fn test(tx: Sender<CommandWrapper>) -> Response {
+fn simple_command_parser(cmd: String) -> Command {
+    if cmd.to_lowercase() =="ping" {
+        return Command::Ping;
+    }
+    else if !cmd.contains("::") {
+        return Command::Get{key:cmd};
+    }
+    else {
+        let res: Vec<String> = cmd.split("::").map(|s| s.to_string()).collect();
+        let key = &res[0];
+        let value = &res[1];
+        return Command::Set{key: key.clone(), value: value.clone() };
+    };
+}
+
+async fn test(tx: Sender<CommandWrapper>, cmd: Command) -> Response {
     
     let (resp_tx, resp_rx) = oneshot::channel::<protocol::Response>();
-    let (resp_tx2, resp_rx2) = oneshot::channel::<protocol::Response>();
-    let (resp_tx3, resp_rx3) = oneshot::channel::<protocol::Response>();
-    tx.send(CommandWrapper{ cmd : Command::Ping, resp : resp_tx}).await;
-    tx.send(CommandWrapper{ cmd : Command::Set{key: "Hello".to_string(), value: "world".to_string()}, resp : resp_tx2}).await;
-    tx.send(CommandWrapper{ cmd : Command::Get{key: "Hello".to_string()}, resp : resp_tx3}).await;
+    tx.send(CommandWrapper{ cmd : cmd, resp : resp_tx}).await;
     let res = resp_rx.await.unwrap_or(protocol::Response::Error{msg : "".into()});
-    println!("{}",res);
-    let res = resp_rx2.await.unwrap_or(protocol::Response::Error{msg : "".into()});
-    println!("{}",res);
-    let res = resp_rx3.await.unwrap_or(protocol::Response::Error{msg : "".into()});
     println!("{}",res);
     res
 }
