@@ -1,5 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
 
 use std::{error::Error, fmt::Pointer};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -121,4 +119,3 @@ struct CommandWrapper {
     cmd: Command,
     resp: oneshot::Sender<protocol::Response>,
 }
-

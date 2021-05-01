@@ -8,11 +8,6 @@ pub struct InMemoryDatabase {
 }
 
 
-lazy_static! {
-    pub static  ref  DBS: InMemoryDatabase = InMemoryDatabase::new();
-}
-
-
 impl  InMemoryDatabase  {
 
     pub fn get(&self, key: &String) -> Option<&String> {
