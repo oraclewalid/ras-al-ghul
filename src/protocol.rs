@@ -17,7 +17,7 @@ impl fmt::Display for Command {
         write!(f, "{:?}", self)
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Response {
     Pong,
     Get {

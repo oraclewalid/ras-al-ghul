@@ -1,10 +1,16 @@
-# ras-al-ghul
+# Ras al ghul
 KV database
- #### TODO
+
+#### Roadmap
 - [x] Partial Redis protocol support
-- [ ] Peristence via LSM tree
+- [ ] Support of basic functions (INC, ADD ...)
+- [ ] Support of List, Set and Map
+- [ ] Simple persistence on disk
+- [ ] TTL
+- [ ] Monitoring (Prometheus  ?)
+- [ ] Persistence via LSM tree
 - [ ] SQL support
 - [ ] Versioning
+- [ ] RAFT Leader election
 - [ ] RAFT replication
-- [ ] Leader election
 - [ ] HyperLogLog
