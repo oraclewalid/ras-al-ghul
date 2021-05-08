@@ -38,7 +38,3 @@ impl fmt::Display for Response {
         write!(f, "{:?}", self)
     }
 }
-
-const SET: &str = "set";
-const PING: &str = "ping";
-const PONG: &str = "pong";

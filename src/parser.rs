@@ -25,7 +25,8 @@ fn map_values_to_cmd(resp_value: Vec<Value>) -> Command {
         [Value::Bulk(cmd), Value::Bulk(key), Value::Bulk(value)] if cmd.to_lowercase() == SET => Command::Set{key: key.clone(), value: value.clone()},
         [Value::Bulk(cmd), Value::Bulk(key)] if cmd.to_lowercase() == GET => Command::Get{key: key.clone()},
         [Value::Bulk(cmd)] if cmd.to_lowercase() == PING => Command::Ping,
-        _ => Command::Error{msg : "".into()},
+        [Value::Bulk(cmd)] if cmd.to_lowercase() == COMMAND => Command::Command,
+        _ => Command::Error{msg : UNKNOWN_ERROR.into()},
     }
 }
 
@@ -45,11 +46,13 @@ pub fn map_response_to_resp(response: Response) -> Value {
     }
 }
 
-const SET: &str  = "set";
-const GET: &str  = "get";
-const PING: &str = "ping";
-const PONG: &str = "pong";
-const OK: &str = "ok";
+const SET: &str             = "set";
+const GET: &str             = "get";
+const PING: &str            = "ping";
+const PONG: &str            = "pong";
+const OK: &str              = "ok";
+const COMMAND: &str         = "command";
+const UNKNOWN_ERROR: &str   = "Unknown error";
 
 #[test]
 fn parse_and_map_set_a_1() {
