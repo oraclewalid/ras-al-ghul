@@ -5,7 +5,7 @@ use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::*;
 use tokio::sync::oneshot;
-
+use std::io::{Read, BufReader};
 
 
 use std::env;
@@ -14,6 +14,9 @@ use protocol::*;
 
 mod database;
 use database::*;
+
+mod parser;
+use parser::*;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -53,14 +56,37 @@ async fn process(mut socket: TcpStream, tx: Sender<CommandWrapper>) {
         .await
         .expect("failed to read data from socket");
 
+    use resp::{Value, encode, encode_slice, Decoder};
+    let mut  f = resp::Decoder::new(BufReader::new(buf.as_slice()));
+    
+    let encooded_cmd  = f.decode().unwrap();
+    let SET = String::from("set");
+    let isarray = match encooded_cmd {
+        Value::Array(mut values) => {
+            println!("{}", values.len());
+            match &values[..] {
+                [] => Some(Value::NullArray),
+                //[Value::String(cmd), Value::String(key), Value::String(value), Value::String(tll)] => Some(Value::NullArray),
+                [cmd, key,value,tll] => Some(cmd.clone()),
+                //[cmd, key, value, ttl] => Some(ttl.clone()),
+                v => Some(Value::String("Merdace".to_string())),
+            }
+        },
+        _ => Some(Value::Null),
+    };
+    
+    println!("decode {}",    isarray.unwrap().to_beautify_string());
+    
     let cmdRaw = String::from_utf8(buf[0..(n-1)].to_vec()).unwrap();
 
     let cmd = simple_command_parser(cmdRaw);
 
     let res = test(tx, cmd).await;
-
+    let value = Value::Bulk("ping".to_string());
+    let buf = value.encode();
+    //print!("-------------------------------{}", value.to_string_pretty());
     socket
-        .write_all(res.to_string().as_bytes())
+        .write_all(value.encode().as_slice())
         .await
         .expect("failed to write data to socket");
 }

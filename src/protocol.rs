@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Command {
     Ping,
     Get {
@@ -9,6 +9,10 @@ pub enum Command {
     Set {
         key: String,
         value: String,
+    },
+    Command,
+    Error{
+        msg: String
     }
 }
 
