@@ -4,6 +4,13 @@ use resp::{Value, encode, encode_slice, Decoder};
 use crate::Command;
 use crate::Response;
 
+
+
+fn parse_resp(bytes: &[u8]) -> Result<Value, Error> {
+    let mut decoder = Decoder::new(BufReader::new(bytes));
+    return decoder.decode();
+}
+
 fn map_resp_to_cmd(resp_value: Value) -> Command{
     match resp_value {
             Value::Array(resp_vec)=> map_values_to_cmd(resp_vec) ,
@@ -14,18 +21,14 @@ fn map_resp_to_cmd(resp_value: Value) -> Command{
 fn map_values_to_cmd(resp_value: Vec<Value>) -> Command {
     match &resp_value[..] {
         [] => Command::Error{msg : "".into()},
-        [Value::Bulk(cmd), Value::Bulk(key) ,Value::Bulk(value) ,Value::Bulk(ttl)] => Command::Set{key: key.clone(), value: value.clone()},
-        [Value::Bulk(cmd), Value::Bulk(key), Value::Bulk(value)] => Command::Set{key: key.clone(), value: value.clone()},
-        [Value::Bulk(cmd), Value::Bulk(key)] => Command::Get{key: key.clone()},
-        [Value::Bulk(cmd)] if cmd.to_lowercase() == "ping" => Command::Ping,
+        [Value::Bulk(cmd), Value::Bulk(key) ,Value::Bulk(value) ,Value::Bulk(ttl)] if cmd.to_lowercase() == SET => Command::Set{key: key.clone(), value: value.clone()},
+        [Value::Bulk(cmd), Value::Bulk(key), Value::Bulk(value)] if cmd.to_lowercase() == SET => Command::Set{key: key.clone(), value: value.clone()},
+        [Value::Bulk(cmd), Value::Bulk(key)] if cmd.to_lowercase() == GET => Command::Get{key: key.clone()},
+        [Value::Bulk(cmd)] if cmd.to_lowercase() == PING => Command::Ping,
         _ => Command::Error{msg : "".into()},
     }
 }
 
-fn parse_resp(bytes: &[u8]) -> Result<Value, Error> {
-    let mut decoder = Decoder::new(BufReader::new(bytes));
-    return decoder.decode();
-}
 
 pub fn parse_and_map_to_command(bytes: &[u8]) -> Command {
     let value = parse_resp(bytes);
@@ -36,11 +39,17 @@ pub fn parse_and_map_to_command(bytes: &[u8]) -> Command {
 pub fn map_response_to_resp(response: Response) -> Value {
     match response {
         Response::Get{value}    => Value::String(value),
-        Response::OK                   => Value::String("ok".into()),
-        Response::Pong                 => Value::String("pong".into()),
+        Response::OK                   => Value::String(OK.into()),
+        Response::Pong                 => Value::String(PONG.into()),
         Response::Error{msg}    => Value::Error(msg),
     }
 }
+
+const SET: &str  = "set";
+const GET: &str  = "get";
+const PING: &str = "ping";
+const PONG: &str = "pong";
+const OK: &str = "ok";
 
 #[test]
 fn parse_and_map_set_a_1() {
