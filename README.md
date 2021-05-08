@@ -5,6 +5,7 @@ KV database
 - [x] Partial Redis protocol support
 - [ ] Config file and arguments parsing
 - [ ] Support of basic functions (INC, ADD ...)
+- [ ] Add logging and tracing
 - [ ] Support of List, Set and Map
 - [ ] Simple persistence on disk
 - [ ] TTL
