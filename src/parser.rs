@@ -2,17 +2,12 @@ use std::io::{Read, BufReader, Error};
 use resp::{Value, encode, encode_slice, Decoder};
 
 use crate::Command;
+use crate::Response;
 
 fn map_resp_to_cmd(resp_value: Value) -> Command{
-    match (resp_value) {
-            Value::Null => Command::Error{msg : "TODO".into()},
-            Value::NullArray => Command::Error{msg : "TODO".into()},
-            Value::String(a) => Command::Error{msg : "TODO".into()},
-            Value::Error(a) => Command::Error{msg : "TODO".into()},
-            Value::Integer(i) => Command::Error{msg : "TODO".into()},
-            Value::Bulk(s) => Command::Error{msg : "TODO".into()},
-            Value::BufBulk(a)=> Command::Error{msg : "TODO".into()},
+    match resp_value {
             Value::Array(resp_vec)=> map_values_to_cmd(resp_vec) ,
+            _ => Command::Error{msg : "TODO".into()},
     }
 }
 
@@ -22,6 +17,7 @@ fn map_values_to_cmd(resp_value: Vec<Value>) -> Command {
         [Value::Bulk(cmd), Value::Bulk(key) ,Value::Bulk(value) ,Value::Bulk(ttl)] => Command::Set{key: key.clone(), value: value.clone()},
         [Value::Bulk(cmd), Value::Bulk(key), Value::Bulk(value)] => Command::Set{key: key.clone(), value: value.clone()},
         [Value::Bulk(cmd), Value::Bulk(key)] => Command::Get{key: key.clone()},
+        [Value::Bulk(cmd)] if cmd.to_lowercase() == "ping" => Command::Ping,
         _ => Command::Error{msg : "".into()},
     }
 }
@@ -31,8 +27,19 @@ fn parse_resp(bytes: &[u8]) -> Result<Value, Error> {
     return decoder.decode();
 }
 
-fn parse_and_map_to_command(bytes: &[u8]) -> Command {
+pub fn parse_and_map_to_command(bytes: &[u8]) -> Command {
+    let value = parse_resp(bytes);
+    dbg!(value.unwrap());
     parse_resp(bytes).map (|value| map_resp_to_cmd(value)).unwrap_or(Command::Error{msg : "".into()})
+}
+
+pub fn map_response_to_resp(response: Response) -> Value {
+    match response {
+        Response::Get{value}    => Value::String(value),
+        Response::OK                   => Value::String("ok".into()),
+        Response::Pong                 => Value::String("pong".into()),
+        Response::Error{msg}    => Value::Error(msg),
+    }
 }
 
 #[test]
