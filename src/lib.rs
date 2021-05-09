@@ -17,3 +17,6 @@ pub use network::*;
 
 mod database_manager;
 pub use database_manager::*;
+
+mod config;
+pub use config::*;
