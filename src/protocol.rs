@@ -38,3 +38,11 @@ impl fmt::Display for Response {
         write!(f, "{:?}", self)
     }
 }
+
+use tokio::sync::mpsc::Receiver;
+use tokio::sync::oneshot;
+pub struct CommandWrapper {
+    pub cmd: Command,
+    pub resp: oneshot::Sender<Response>,
+}
+pub type CommandReceiver = Receiver<CommandWrapper>;
