@@ -8,7 +8,7 @@ use tokio::sync::oneshot;
 use crate::parser::*;
 use crate::protocol::*;
 
-async fn process(mut socket: TcpStream, tx: Sender<CommandWrapper>) {
+pub async fn process(mut socket: TcpStream, tx: Sender<CommandWrapper>) {
 
     let mut buf = vec![0; 4*1024];
 
@@ -37,9 +37,4 @@ async fn send_command(tx: Sender<CommandWrapper>, cmd: Command) -> Response {
     let res = resp_rx.await.unwrap_or(Response::Error{msg : "".into()});
     println!("{}",res);
     res
-}
-
-struct CommandWrapper {
-    cmd: Command,
-    resp: oneshot::Sender<Response>,
 }
