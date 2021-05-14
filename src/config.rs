@@ -1,37 +1,51 @@
 use serde_derive::Deserialize;
 
+use std::fs::File;
+use std::io::Read;
+use std::io;
+
 #[derive(Debug, Deserialize, Clone)]
-struct Config  {
-    server  : Option<ServerConfig>,
-    storage : Option<StorageConfig>,
+pub struct Config  {
+    pub server  : Option<ServerConfig>,
+    pub storage : Option<StorageConfig>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
-struct ServerConfig {
+pub struct ServerConfig {
     bind    : Option<String>,
     port    : Option<u64>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
-struct StorageConfig {
+pub struct StorageConfig {
     snapshot : Option<bool>,
     db_file_name: Option<String>,
     save        : Option<u64>,
 }
 
 
-pub fn get_config() {
-    let toml_str = r#"
-    [server]
-    ip = "127.0.0.1"
-    port = 80
-    [storage]
-    snapshot = true
-    db_file_name = "/tmp/ras/dg.ser"
-    save = 100
-"#;
+pub fn get_config(filename: String) -> Result<Config, io::Error> {
+
+    let file_content = get_file_as_str(&filename);
     
-    let decoded: ServerConfig = toml::from_str(toml_str).unwrap();
+    match file_content {
+        Ok(file_content)=> parse_config(file_content),
+        Err(e)              => Err(e),
+    }
+}
+
+
+fn get_file_as_str(filename: &String) -> Result<String, io::Error> {
+    let mut f = File::open(filename)?;
+    let mut s = String::new();
+
+    f.read_to_string(&mut s)?;
+
+    Ok(s)
+}
+fn parse_config(config: String) -> Result<Config, io::Error> {
+    
+     return toml::from_str::<Config>(&config.as_str()).map_err(|e| io::Error::from(io::ErrorKind::InvalidInput));
 }
 
 #[test]
@@ -46,7 +60,8 @@ fn parse_config_in_toml_format() {
         db_file_name = "/tmp/ras/ras-al-ghul.db"
         save = 1000
     "#;
-    let config: Config= toml::from_str(toml_str).unwrap();
+
+    let config: Config=  parse_config(toml_str.into()).unwrap();
 
    assert_eq!( config.clone().server.unwrap().bind.unwrap(), "127.0.0.1");
    assert_eq!( config.clone().server.unwrap().port.unwrap(), 80);
@@ -54,23 +69,4 @@ fn parse_config_in_toml_format() {
    assert_eq!( config.clone().storage.unwrap().db_file_name.unwrap(), "/tmp/ras/ras-al-ghul.db");
    assert_eq!( config.clone().storage.unwrap().save.unwrap(), 1000);
 }
-/*
-use std::fs::File;
-use std::io::Read;
 
-fn get_file_as_byte_vec(filename: &String) -> Vec<u8> {
-    let mut f = File::open(&filename).expect("no file found");
-    let metadata = fs::metadata(&filename).expect("unable to read metadata");
-    let mut buffer = vec![0; metadata.len() as usize];
-    f.read(&mut buffer).expect("buffer overflow");
-
-    buffer
-}
-tcp-keepalive 300
-
-SNAPSHOTTING  
-save 900 1
-dbfilename dump.rdb
-
-logfile 
-*/
