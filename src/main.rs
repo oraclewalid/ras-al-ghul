@@ -25,14 +25,13 @@ mod network;
 async fn main() -> Result<(), Box<dyn Error>> {
 
     let addr = env::args()
-        .nth(1)
-        .unwrap_or_else(|| "127.0.0.1:6543".to_string());
+        .nth(1);
 
-    let conf = config::get_config(addr.clone()).expect("Impossible to parse config file");
+    let conf = config::get_config(addr);
 
-    let listener = TcpListener::bind(&addr).await?;
+    let listener = TcpListener::bind(conf.server.to_server_with_port()).await?;
 
-    println!("Listening on: {}", addr);
+    println!("Listening on: {}", conf.server.to_server_with_port());
 
     let (tx, rx) = mpsc::channel::<CommandWrapper>(32);
 

@@ -6,31 +6,61 @@ use std::io;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Config  {
-    pub server  : Option<ServerConfig>,
-    pub storage : Option<StorageConfig>,
+    pub server  : ServerConfig,
+    pub storage : StorageConfig,
+}
+
+impl Default for Config {
+    fn default() -> Config {
+        Config { server: ServerConfig::default(), storage: StorageConfig::default() }
+   }
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct ServerConfig {
-    bind    : Option<String>,
-    port    : Option<u64>,
+    bind    : String,
+    port    : u64,
 }
+
+impl Default for ServerConfig {
+    fn default() -> ServerConfig {
+        ServerConfig { bind: "0.0.0.0".into(), port: 6543 }
+   }
+}
+
+impl ServerConfig {
+    pub fn to_server_with_port(&self) -> String {
+        format!("{}:{}", self.bind, self.port)
+    }
+}
+
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct StorageConfig {
-    snapshot : Option<bool>,
+    snapshot    : bool,
     db_file_name: Option<String>,
     save        : Option<u64>,
 }
 
+impl Default for StorageConfig {
+    fn default() -> StorageConfig {
+        StorageConfig { snapshot: true, db_file_name: Some("/tmp/ras/ras-al-ghul.db".into()), save: Some(1000) }
+   }
+}
 
-pub fn get_config(filename: String) -> Result<Config, io::Error> {
 
-    let file_content = get_file_as_str(&filename);
+
+pub fn get_config(filename: Option<String>) -> Config {
+    
+    if filename.is_none(){
+        return Config::default();
+    }
+
+    let file_content = get_file_as_str(&filename.unwrap());
     
     match file_content {
-        Ok(file_content)=> parse_config(file_content),
-        Err(e)              => Err(e),
+        Ok(file_content)=> parse_config(file_content).unwrap_or(Config::default()),
+        _                      => Config::default(),
     }
 }
 
@@ -43,9 +73,9 @@ fn get_file_as_str(filename: &String) -> Result<String, io::Error> {
 
     Ok(s)
 }
-fn parse_config(config: String) -> Result<Config, io::Error> {
+fn parse_config(config: String) -> Result<Config, toml::de::Error> {
     
-     return toml::from_str::<Config>(&config.as_str()).map_err(|e| io::Error::from(io::ErrorKind::InvalidInput));
+     return toml::from_str::<Config>(&config.as_str());
 }
 
 #[test]
@@ -63,10 +93,36 @@ fn parse_config_in_toml_format() {
 
     let config: Config=  parse_config(toml_str.into()).unwrap();
 
-   assert_eq!( config.clone().server.unwrap().bind.unwrap(), "127.0.0.1");
-   assert_eq!( config.clone().server.unwrap().port.unwrap(), 80);
-   assert_eq!( config.clone().storage.unwrap().snapshot.unwrap(), true);
-   assert_eq!( config.clone().storage.unwrap().db_file_name.unwrap(), "/tmp/ras/ras-al-ghul.db");
-   assert_eq!( config.clone().storage.unwrap().save.unwrap(), 1000);
+   assert_eq!( config.clone().server.bind, "127.0.0.1");
+   assert_eq!( config.clone().server.port, 80);
+   assert_eq!( config.clone().storage.snapshot, true);
+   assert_eq!( config.clone().storage.db_file_name.unwrap(), "/tmp/ras/ras-al-ghul.db");
+   assert_eq!( config.clone().storage.save.unwrap(), 1000);
+}
+
+#[test]
+fn return_default_config_if_config_file_dont_exist() {
+
+
+    let config: Config=  get_config(Some("/path/to/file.cfg".into()));
+
+   assert_eq!( config.clone().server.bind, "0.0.0.0");
+   assert_eq!( config.clone().server.port, 6543);
+   assert_eq!( config.clone().storage.snapshot, true);
+   assert_eq!( config.clone().storage.db_file_name.unwrap(), "/tmp/ras/ras-al-ghul.db");
+   assert_eq!( config.clone().storage.save.unwrap(), 1000);
+}
+
+#[test]
+fn return_default_config_if_no_config_file_is_provided() {
+
+
+    let config: Config=  get_config(Some("/path/to/file.cfg".into()));
+
+   assert_eq!( config.clone().server.bind, "0.0.0.0");
+   assert_eq!( config.clone().server.port, 6543);
+   assert_eq!( config.clone().storage.snapshot, true);
+   assert_eq!( config.clone().storage.db_file_name.unwrap(), "/tmp/ras/ras-al-ghul.db");
+   assert_eq!( config.clone().storage.save.unwrap(), 1000);
 }
 
