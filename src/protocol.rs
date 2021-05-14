@@ -10,6 +10,13 @@ pub enum Command {
         key: String,
         value: String,
     },
+    Inc {
+        key: String,
+    },
+    Add {
+        key: String,
+        value: String,
+    },
     Command,
     Error{
         msg: String
