@@ -41,8 +41,9 @@ pub async fn start_memory_manager(mut rx: CommandReceiver) {
 
             },
             Command::Incr{key} => {
-                let db_value = db.get(&key);
-
+                let db_value = db.get(&key)
+                    .or(Some(&String::from("0")))
+                    .and_then(|value | value.parse::<i64>().ok());
                 match db_value {
                     Some(db_value) =>{
                         let new_value = db_value + 1;
