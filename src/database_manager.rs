@@ -25,7 +25,34 @@ pub async fn start_memory_manager(mut rx: CommandReceiver) {
                     Some(value ) => Response::Get{value: value.clone()},
                     None => Response::Error{msg : format!("The key {} not found", key)}
                 }
-            }
+            },
+            Command::Incrby{key, value} => {
+                let db_value = db.get(&key)
+                        .or(Some(&String::from("0")))
+                        .and_then(|value | value.parse::<i64>().ok());
+                match db_value {
+                    Some(db_value) =>{
+                        let new_value = db_value + value;
+                        db.set(key, new_value.to_string());
+                        Response::Get{value: new_value.to_string()}
+                    },
+                    None  =>  Response::Error{msg : "ERR value is not an integer or out of range".into()}
+                }
+
+            },
+            Command::Incr{key} => {
+                let db_value = db.get(&key);
+
+                match db_value {
+                    Some(db_value) =>{
+                        let new_value = db_value + 1;
+                        db.set(key, new_value.to_string());
+                        Response::Get{value: new_value.to_string()}
+                    },
+                    None  =>  Response::Error{msg : "ERR value is not an integer or out of range".into()}
+                }
+
+            },
             _ => Response::Error{msg : "Unknown command".into()}
         };
 

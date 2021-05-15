@@ -20,10 +20,18 @@ fn map_resp_to_cmd(resp_value: Value) -> Command{
 
 fn map_values_to_cmd(resp_value: Vec<Value>) -> Command {
     match &resp_value[..] {
-        [] => Command::Error{msg : "".into()},
         [Value::Bulk(cmd), Value::Bulk(key) ,Value::Bulk(value) ,Value::Bulk(ttl)] if cmd.to_lowercase() == SET => Command::Set{key: key.clone(), value: value.clone()},
         [Value::Bulk(cmd), Value::Bulk(key), Value::Bulk(value)] if cmd.to_lowercase() == SET => Command::Set{key: key.clone(), value: value.clone()},
         [Value::Bulk(cmd), Value::Bulk(key)] if cmd.to_lowercase() == GET => Command::Get{key: key.clone()},
+        [Value::Bulk(cmd), Value::Bulk(key)] if cmd.to_lowercase() == INCR => Command::Incr{key: key.clone()},
+        [Value::Bulk(cmd), Value::Bulk(key), Value::Bulk(value)] if cmd.to_lowercase() == INCRBY => {
+            let value = value.parse::<i64>();
+            match value {
+                Ok(value) => Command::Incrby{key: key.clone(), value: value.clone()},
+                _             => Command::Error{msg : "ERR value is not an integer or out of range".into()},
+            }
+            
+        },
         [Value::Bulk(cmd)] if cmd.to_lowercase() == PING => Command::Ping,
         [Value::Bulk(cmd)] if cmd.to_lowercase() == COMMAND => Command::Command,
         _ => Command::Error{msg : UNKNOWN_ERROR.into()},
@@ -48,6 +56,8 @@ pub fn map_response_to_resp(response: Response) -> Value {
 
 const SET: &str             = "set";
 const GET: &str             = "get";
+const INCRBY: &str          = "incrby";
+const INCR: &str            = "incr";
 const PING: &str            = "ping";
 const PONG: &str            = "pong";
 const OK: &str              = "ok";
