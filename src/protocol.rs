@@ -10,12 +10,12 @@ pub enum Command {
         key: String,
         value: String,
     },
-    Inc {
+    Incr {
         key: String,
     },
-    Add {
+    Incrby {
         key: String,
-        value: String,
+        value: i64,
     },
     Command,
     Error{
