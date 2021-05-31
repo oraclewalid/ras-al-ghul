@@ -7,7 +7,7 @@ KV database
 - [x] Support of basic functions (INC, ADD ...)
 - [ ] Add logging and tracing
 - [ ] Support of List, Set and Map
-- [ ] Simple persistence on disk
+- [x] Simple persistence on disk
 - [ ] TTL
 - [ ] Benchmark (vs Redis)
 - [ ] Monitoring (Prometheus  ?)
