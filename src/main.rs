@@ -1,10 +1,7 @@
 
 use std::{error::Error};
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::{TcpListener, TcpStream};
+use tokio::net::{TcpListener};
 use tokio::sync::mpsc;
-use tokio::sync::mpsc::*;
-use tokio::sync::oneshot;
 
 
 use std::env;
@@ -14,7 +11,6 @@ use protocol::*;
 mod database;
 
 mod parser;
-use parser::*;
 
 mod database_manager;
 mod config;
@@ -38,8 +34,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     tokio::spawn(async move { database_manager::start_memory_manager(rx).await });
 
     loop {
-        // Asynchronously wait for an inbound socket.
-        let (mut socket, _) = listener.accept().await.unwrap();
+        let (socket, _) = listener.accept().await.unwrap();
         let tx2 = tx.clone();
 
         tokio::spawn(async move { network::process(socket, tx2).await });
