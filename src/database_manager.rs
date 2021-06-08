@@ -54,6 +54,9 @@ pub async fn start_memory_manager(mut rx: CommandReceiver) {
                 }
 
             },
+            Command::Save => {
+
+            },
             _ => Response::Error{msg : "Unknown command".into()}
         };
 
