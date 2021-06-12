@@ -1,8 +1,9 @@
 
 use crate::protocol::*;
 use crate::database;
+use crate::config::StorageConfig;
 
-pub async fn start_memory_manager(mut rx: CommandReceiver) {
+pub async fn start_memory_manager(mut rx: CommandReceiver, storage : StorageConfig) {
 
     let mut db = database::InMemoryDatabase::new();
 
@@ -55,7 +56,7 @@ pub async fn start_memory_manager(mut rx: CommandReceiver) {
 
             },
             Command::Save => {
-
+                Response::Error{msg : "Unknown command".into()}
             },
             _ => Response::Error{msg : "Unknown command".into()}
         };
