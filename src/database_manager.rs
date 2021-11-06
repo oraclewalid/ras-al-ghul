@@ -45,7 +45,7 @@ pub async fn start_memory_manager(mut rx: CommandReceiver) {
                     .or(Some(&String::from("0")))
                     .and_then(|value | value.parse::<i64>().ok());
                 match db_value {
-                    Some(db_value) =>{
+                    Some(db_value) => {
                         let new_value = db_value + 1;
                         db.set(key, new_value.to_string());
                         Response::Get{value: new_value.to_string()}
