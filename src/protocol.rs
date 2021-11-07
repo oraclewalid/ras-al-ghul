@@ -18,6 +18,7 @@ pub enum Command {
         value: i64,
     },
     Command,
+    Save,
     Error{
         msg: String
     }
