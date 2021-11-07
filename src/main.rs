@@ -31,7 +31,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let (tx, rx) = mpsc::channel::<CommandWrapper>(32);
 
-    tokio::spawn(async move { database_manager::start_memory_manager(rx).await });
+    tokio::spawn(async move { database_manager::start_memory_manager(rx, conf.clone()).await });
 
     loop {
         let (socket, _) = listener.accept().await.unwrap();

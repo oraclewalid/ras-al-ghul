@@ -1,8 +1,11 @@
 
+use serde_cbor::Error;
+
+use crate::config::Config;
 use crate::protocol::*;
 use crate::database;
 
-pub async fn start_memory_manager(mut rx: CommandReceiver) {
+pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
 
     let mut db = database::InMemoryDatabase::new();
 
@@ -51,6 +54,19 @@ pub async fn start_memory_manager(mut rx: CommandReceiver) {
                         Response::Get{value: new_value.to_string()}
                     },
                     None  =>  Response::Error{msg : "ERR value is not an integer or out of range".into()}
+                }
+
+            },
+            Command::Save => {
+                if (conf.storage.snapshot == true) {
+                    let persistance = db.persist(conf.storage.clone().db_file_name.unwrap());
+                    match persistance {
+                        Ok(()) =>  Response::OK,
+                        _  =>  Response::Error{msg : "ERROR, the database was not persisted".into()},
+                    }
+                }
+                else {
+                    Response::Error{msg : "ERROR, snapshot of DB is not activated".into()}
                 }
 
             },

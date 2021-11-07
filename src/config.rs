@@ -37,9 +37,9 @@ impl ServerConfig {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct StorageConfig {
-    snapshot    : bool,
-    db_file_name: Option<String>,
-    save        : Option<u64>,
+    pub snapshot    : bool,
+    pub db_file_name: Option<String>,
+    pub save        : Option<u64>,
 }
 
 impl Default for StorageConfig {
