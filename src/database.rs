@@ -30,10 +30,15 @@ impl  InMemoryDatabase  {
         }
     }
     pub fn load(path: String) -> serde_cbor::Result<InMemoryDatabase> {
-        let db_file = File::open(path);
+        let db_file = File::open(path.clone());
         match db_file {
-            Ok(file) => serde_cbor::from_reader(file) ,
-            Err(e) => Ok(InMemoryDatabase::new()),
+            Ok(file) => {
+                serde_cbor::from_reader(file)
+            },
+            Err(e) => {
+                println!("Can't load snapshot from {}, create a new DB", path.clone());
+                Ok(InMemoryDatabase::new())
+            },
         }
     }
 

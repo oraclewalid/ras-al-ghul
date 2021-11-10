@@ -87,7 +87,7 @@ fn load_db_or_create_new(conf: Config) -> InMemoryDatabase {
         let db_result = InMemoryDatabase::load(conf.storage.clone().db_file_name.unwrap());
         match db_result {
             Ok(db) =>  db,
-            _  =>  InMemoryDatabase::new(),
+            _  =>  panic!("Can't deserialize DB!"),
         }
     }
     else {
