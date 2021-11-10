@@ -61,7 +61,10 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
                 if conf.storage.snapshot == true {
                     let persistance = db.persist(conf.storage.clone().db_file_name.unwrap());
                     match persistance {
-                        Ok(()) =>  Response::OK,
+                        Ok(()) =>  {
+                            println!("DB persisted on {}", conf.storage.clone().db_file_name.unwrap());
+                            Response::OK
+                        },
                         _  =>  Response::Error{msg : "ERROR, the database was not persisted".into()},
                     }
                 }

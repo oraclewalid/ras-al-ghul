@@ -36,7 +36,7 @@ impl  InMemoryDatabase  {
                 serde_cbor::from_reader(file)
             },
             Err(e) => {
-                println!("Can't load snapshot from {}, create a new DB", path.clone());
+                println!("Can't load snapshot from {}, create a new DB", e);
                 Ok(InMemoryDatabase::new())
             },
         }
