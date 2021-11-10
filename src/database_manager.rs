@@ -3,11 +3,11 @@ use serde_cbor::Error;
 
 use crate::config::Config;
 use crate::protocol::*;
-use crate::database;
+use crate::database::InMemoryDatabase;
 
 pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
 
-    let mut db = database::InMemoryDatabase::new();
+    let mut db = load_db_or_create_new(conf.clone());
 
     while let Some(cmd_wrapper) = rx.recv().await {
 
@@ -79,4 +79,8 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
             Result::Err(error) => println!("Error in message sent {}", error)
         }
     }
+}
+
+fn load_db_or_create_new(conf: Config) -> InMemoryDatabase {
+    InMemoryDatabase::new()
 }

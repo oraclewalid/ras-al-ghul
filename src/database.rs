@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::error::Error;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::fs::File;
