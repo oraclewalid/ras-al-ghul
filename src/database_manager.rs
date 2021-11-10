@@ -58,7 +58,7 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
 
             },
             Command::Save => {
-                if (conf.storage.snapshot == true) {
+                if conf.storage.snapshot == true {
                     let persistance = db.persist(conf.storage.clone().db_file_name.unwrap());
                     match persistance {
                         Ok(()) =>  Response::OK,
@@ -82,5 +82,16 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
 }
 
 fn load_db_or_create_new(conf: Config) -> InMemoryDatabase {
-    InMemoryDatabase::new()
+    if conf.storage.snapshot == true {
+        println!("Loading snapshot from {}", conf.storage.clone().db_file_name.unwrap());
+        let db_result = InMemoryDatabase::load(conf.storage.clone().db_file_name.unwrap());
+        match db_result {
+            Ok(db) =>  db,
+            _  =>  InMemoryDatabase::new(),
+        }
+    }
+    else {
+        InMemoryDatabase::new()
+    }
+    
 }
