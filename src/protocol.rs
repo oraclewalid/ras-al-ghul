@@ -20,7 +20,8 @@ pub enum Command {
     Command,
     Error{
         msg: String
-    }
+    },
+    Save
 }
 
 impl fmt::Display for Command {

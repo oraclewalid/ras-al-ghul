@@ -1,10 +1,13 @@
 
+use serde_cbor::Error;
+
+use crate::config::Config;
 use crate::protocol::*;
-use crate::database;
+use crate::database::InMemoryDatabase;
 
-pub async fn start_memory_manager(mut rx: CommandReceiver) {
+pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
 
-    let mut db = database::InMemoryDatabase::new();
+    let mut db = load_db_or_create_new(conf.clone());
 
     while let Some(cmd_wrapper) = rx.recv().await {
 
@@ -45,12 +48,28 @@ pub async fn start_memory_manager(mut rx: CommandReceiver) {
                     .or(Some(&String::from("0")))
                     .and_then(|value | value.parse::<i64>().ok());
                 match db_value {
-                    Some(db_value) =>{
+                    Some(db_value) => {
                         let new_value = db_value + 1;
                         db.set(key, new_value.to_string());
                         Response::Get{value: new_value.to_string()}
                     },
                     None  =>  Response::Error{msg : "ERR value is not an integer or out of range".into()}
+                }
+
+            },
+            Command::Save => {
+                if conf.storage.snapshot == true {
+                    let persistance = db.persist(conf.storage.clone().db_file_name.unwrap());
+                    match persistance {
+                        Ok(()) =>  {
+                            println!("DB persisted on {}", conf.storage.clone().db_file_name.unwrap());
+                            Response::OK
+                        },
+                        _  =>  Response::Error{msg : "ERROR, the database was not persisted".into()},
+                    }
+                }
+                else {
+                    Response::Error{msg : "ERROR, snapshot of DB is not activated".into()}
                 }
 
             },
@@ -63,4 +82,19 @@ pub async fn start_memory_manager(mut rx: CommandReceiver) {
             Result::Err(error) => println!("Error in message sent {}", error)
         }
     }
+}
+
+fn load_db_or_create_new(conf: Config) -> InMemoryDatabase {
+    if conf.storage.snapshot == true {
+        println!("Loading snapshot from {}", conf.storage.clone().db_file_name.unwrap());
+        let db_result = InMemoryDatabase::load(conf.storage.clone().db_file_name.unwrap());
+        match db_result {
+            Ok(db) =>  db,
+            _  =>  panic!("Can't deserialize DB!"),
+        }
+    }
+    else {
+        InMemoryDatabase::new()
+    }
+    
 }

@@ -34,6 +34,7 @@ fn map_values_to_cmd(resp_value: Vec<Value>) -> Command {
         },
         [Value::Bulk(cmd)] if cmd.to_lowercase() == PING => Command::Ping,
         [Value::Bulk(cmd)] if cmd.to_lowercase() == COMMAND => Command::Command,
+        [Value::Bulk(cmd)] if cmd.to_lowercase() == SAVE => Command::Save,
         _ => Command::Error{msg : UNKNOWN_ERROR.into()},
     }
 }
@@ -63,6 +64,7 @@ const PONG: &str            = "pong";
 const OK: &str              = "ok";
 const COMMAND: &str         = "command";
 const UNKNOWN_ERROR: &str   = "Unknown error";
+const SAVE: &str   = "save";
 
 #[test]
 fn parse_and_map_set_a_1() {
