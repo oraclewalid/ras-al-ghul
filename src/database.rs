@@ -33,7 +33,7 @@ impl  InMemoryDatabase  {
         let db_file = File::open(path);
         match db_file {
             Ok(file) => serde_cbor::from_reader(file) ,
-            Err(e) => serde_cbor::,
+            Err(e) => Ok(InMemoryDatabase::new()),
         }
     }
 
