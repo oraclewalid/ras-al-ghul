@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "1.0.0", features = ["full", "tracing"] }
+tokio = { version = "1.0.0", features = ["full", "tracing", "time"] }
 tokio-util = { version = "0.6.3", features = ["full"] }
 tokio-stream = { version = "0.1" }
 bytes = "1.0.0"
