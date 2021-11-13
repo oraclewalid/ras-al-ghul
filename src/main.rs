@@ -15,6 +15,7 @@ mod parser;
 mod database_manager;
 mod config;
 mod network;
+mod scheduler;
 
 
 #[tokio::main]
@@ -30,8 +31,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("Listening on: {}", conf.server.to_server_with_port());
 
     let (tx, rx) = mpsc::channel::<CommandWrapper>(32);
-
+    let tx2 = tx.clone();
+    let conf2 = conf.clone();
     tokio::spawn(async move { database_manager::start_memory_manager(rx, conf.clone()).await });
+    tokio::spawn(async move { scheduler::start_persistance_cron(tx2, conf2).await });
 
     loop {
         let (socket, _) = listener.accept().await.unwrap();

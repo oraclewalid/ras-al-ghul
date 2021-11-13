@@ -109,7 +109,7 @@ fn return_default_config_if_config_file_dont_exist() {
    assert_eq!( config.clone().server.bind, "0.0.0.0");
    assert_eq!( config.clone().server.port, 6543);
    assert_eq!( config.clone().storage.snapshot, true);
-   assert_eq!( config.clone().storage.db_file_name.unwrap(), "/tmp/ras/ras-al-ghul.db");
+   assert_eq!( config.clone().storage.db_file_name.unwrap(), "/tmp/ras-al-ghul.db");
    assert_eq!( config.clone().storage.save.unwrap(), 1000);
 }
 
