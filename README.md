@@ -9,7 +9,7 @@ KV database
 - [ ] Support of List, Set and Map
 - [x] Simple persistence on disk
 - [ ] TTL
-- [/] Benchmark (vs Redis)
+- [x] Benchmark (vs Redis)
 - [ ] Monitoring (Prometheus  ?)
 - [ ] Persistence Rocksdb backend
 - [ ] Persistence via LSM tree
