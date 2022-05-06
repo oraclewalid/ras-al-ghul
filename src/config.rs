@@ -89,6 +89,9 @@ fn parse_config_in_toml_format() {
         snapshot = true
         db_file_name = "/tmp/ras/ras-al-ghul.db"
         save = 1000
+        [storage]
+        backend = "memory"
+        path = "/tmp/ras/ras-al-ghul.db"
     "#;
 
     let config: Config=  parse_config(toml_str.into()).unwrap();
