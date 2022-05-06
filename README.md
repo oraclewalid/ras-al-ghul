@@ -10,6 +10,7 @@ KV database
 - [x] Simple persistence on disk
 - [ ] TTL
 - [x] Benchmark (vs Redis)
+- [ ] Docker image
 - [ ] Monitoring (Prometheus  ?)
 - [ ] Persistence Rocksdb backend
 - [ ] Persistence via LSM tree
