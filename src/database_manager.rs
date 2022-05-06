@@ -4,6 +4,7 @@ use serde_cbor::Error;
 use crate::config::Config;
 use crate::protocol::*;
 use crate::database::InMemoryDatabase;
+use rand::prelude::*;
 
 pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
 
@@ -23,11 +24,19 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
                 Response::OK
             },
             Command::Get{key} => {
-                let value = db.get(&key.clone());
-                match value {
-                    Some(value ) => Response::Get{value: value.clone()},
-                    None => Response::Error{msg : format!("The key {} not found", key)}
+                if key.eq("__rand_int__") {
+                    let mut rng = rand::thread_rng();
+                    let random_int: u8 = random();
+                    Response::Get{value: random_int.to_string()}
+                } else {
+                    
+                    let value = db.get(&key.clone());
+                    match value {
+                        Some(value ) => Response::Get{value: value.clone()},
+                        None => Response::Error{msg : format!("The key {} not found", key)}
+                    }
                 }
+
             },
             Command::Incrby{key, value} => {
                 let db_value = db.get(&key)

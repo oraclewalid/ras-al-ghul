@@ -44,7 +44,7 @@ pub struct StorageConfig {
 
 impl Default for StorageConfig {
     fn default() -> StorageConfig {
-        StorageConfig { snapshot: true, db_file_name: Some("/tmp/ras-al-ghul.db".into()), save: Some(10000) }
+        StorageConfig { snapshot: false, db_file_name: Some("/tmp/ras-al-ghul.db".into()), save: Some(10000) }
    }
 }
 

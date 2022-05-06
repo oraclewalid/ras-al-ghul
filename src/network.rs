@@ -25,6 +25,8 @@ pub async fn process(mut socket: TcpStream, tx: Sender<CommandWrapper>) {
         .write_all(value.encode().as_slice())
         .await
         .expect("failed to write data to socket");
+    
+    //tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
 }
 
 async fn send_command(tx: Sender<CommandWrapper>, cmd: Command) -> Response {
