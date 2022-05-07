@@ -7,12 +7,14 @@ KV database
 - [x] Support of basic functions (INC, ADD ...)
 - [x] Simple snapshot on disk
 - [ ] TTL
-- [x] Benchmark (vs Redis)
+- [ ] Benchmark (vs Redis)
+    +  [x] Support redis-benchmark
+    +  [ ] Performance tunning
 - [ ] Docker image
     +  [ ] Simple docker image
     +  [ ] Build on docker
     +  [ ] Docker-compose with clustering support
-- [ ] Monitoring (  ?)
+- [ ] Monitoring
     +  [ ] logging and tracing
     +  [ ] Prometheus
 - [ ] Persistence
