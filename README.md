@@ -5,17 +5,27 @@ KV database
 - [x] Partial Redis protocol support
 - [x] Config file and arguments parsing
 - [x] Support of basic functions (INC, ADD ...)
-- [ ] Add logging and tracing
-- [ ] Support of List, Set and Map
-- [x] Simple persistence on disk
+- [x] Simple snapshot on disk
 - [ ] TTL
 - [x] Benchmark (vs Redis)
 - [ ] Docker image
-- [ ] Monitoring (Prometheus  ?)
-- [ ] Persistence Rocksdb backend
-- [ ] Persistence via LSM tree
+    +  [ ] Simple docker image
+    +  [ ] Build on docker
+    +  [ ] Docker-compose with clustering support
+- [ ] Monitoring (  ?)
+    +  [ ] logging and tracing
+    +  [ ] Prometheus
+- [ ] Persistence
+    +  [ ] Rocksdb support as a backend
+    +  [ ] Persistence via LSM tree
 - [ ] SQL support
 - [ ] Versioning
-- [ ] RAFT Leader election
-- [ ] RAFT replication
-- [ ] HyperLogLog ?
+- [ ] RAFT
+  + [ ] RAFT Leader election
+  + [ ] RAFT replication
+- [ ] Complex data structures 
+  + [ ] List
+  + [ ] Set
+  + [ ] Map
+  + [ ] HyperLogLog
+  + [ ] Bloom filter
