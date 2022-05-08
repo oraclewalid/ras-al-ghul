@@ -110,6 +110,7 @@ fn parse_config_in_toml_format() {
         save = 1000
         [storage]
         backend = "Rocksdb"
+        path = /tmp/rocksdb
     "#;
     let config: Config=  parse_config(toml_str.into()).unwrap();
 
@@ -118,6 +119,8 @@ fn parse_config_in_toml_format() {
    assert_eq!( config.clone().snapshot.snapshot, true);
    assert_eq!( config.clone().snapshot.db_file_name.unwrap(), "/tmp/ras/ras-al-ghul.db");
    assert_eq!( config.clone().snapshot.save.unwrap(), 1000);
+   assert_eq!( config.clone().storage.backend, StorageBackend::Rocksdb);
+   assert_eq!( config.clone().storage.path.unwrap(), "/tmp/rocksdb");
 }
 
 #[test]
