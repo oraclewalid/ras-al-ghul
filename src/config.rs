@@ -6,13 +6,14 @@ use std::io;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Config  {
-    pub server  : ServerConfig,
-    pub snapshot : SnapshotConfig,
+    pub server      : ServerConfig,
+    pub snapshot    : SnapshotConfig,
+    pub storage     : StorageConfig,
 }
 
 impl Default for Config {
     fn default() -> Config {
-        Config { server: ServerConfig::default(), snapshot: SnapshotConfig::default() }
+        Config { server: ServerConfig::default(), snapshot: SnapshotConfig::default(), storage: StorageConfig::default() }
    }
 }
 
@@ -48,6 +49,24 @@ impl Default for SnapshotConfig {
    }
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct StorageConfig {
+    pub backend   : StorageBackend,
+    pub path      : Option<String>,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq)]
+
+pub enum StorageBackend {
+    Inmemory,
+    Rocksdb
+}
+
+impl Default for StorageConfig {
+    fn default() -> StorageConfig {
+        StorageConfig { backend: StorageBackend::Inmemory, path: None}
+   }
+}
 
 
 pub fn get_config(filename: Option<String>) -> Config {
@@ -90,10 +109,8 @@ fn parse_config_in_toml_format() {
         db_file_name = "/tmp/ras/ras-al-ghul.db"
         save = 1000
         [storage]
-        backend = "memory"
-        path = "/tmp/ras/ras-al-ghul.db"
+        backend = "Rocksdb"
     "#;
-
     let config: Config=  parse_config(toml_str.into()).unwrap();
 
    assert_eq!( config.clone().server.bind, "127.0.0.1");
@@ -114,6 +131,8 @@ fn return_default_config_if_config_file_dont_exist() {
    assert_eq!( config.clone().snapshot.snapshot, false);
    assert_eq!( config.clone().snapshot.db_file_name.unwrap(), "/tmp/ras-al-ghul.db");
    assert_eq!( config.clone().snapshot.save.unwrap(), 10000);
+   assert_eq!( config.clone().storage.backend, StorageBackend::Inmemory);
+   assert_eq!( config.clone().storage.path, None);
 }
 
 #[test]
