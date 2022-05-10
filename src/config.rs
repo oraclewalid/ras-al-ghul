@@ -110,7 +110,7 @@ fn parse_config_in_toml_format() {
         save = 1000
         [storage]
         backend = "Rocksdb"
-        path = /tmp/rocksdb
+        path = "/tmp/rocksdb"
     "#;
     let config: Config=  parse_config(toml_str.into()).unwrap();
 

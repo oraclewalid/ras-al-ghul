@@ -4,6 +4,7 @@ use serde_derive::Serialize;
 use std::fs::File;
 pub trait  Database {
     fn get(self, key: String) -> Option<String>;
+    fn set(self, key: String, value: String) -> Option<String>;
 }
 
 #[derive(Serialize, Deserialize, Debug)]
