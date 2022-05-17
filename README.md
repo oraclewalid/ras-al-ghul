@@ -9,7 +9,7 @@ KV database
 - [ ] TTL
 - [ ] Benchmark (vs Redis)
     +  [x] Support redis-benchmark
-    +  [ ] Performance tunning
+    +  [ ] Performance tuning
 - [ ] Docker image
     +  [ ] Simple docker image
     +  [ ] Build on docker
