@@ -11,8 +11,8 @@ KV database
     +  [x] Support redis-benchmark
     +  [ ] Performance tuning
 - [ ] Docker image
-    +  [ ] Simple docker image
-    +  [ ] Build on docker
+    +  [x] Simple docker image
+    +  [x] Build on docker
     +  [ ] Docker-compose with clustering support
 - [ ] Monitoring
     +  [ ] logging and tracing
