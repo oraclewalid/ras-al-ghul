@@ -8,7 +8,7 @@ use tokio::time::sleep;
 use std::time::Duration;
 
 pub async fn start_persistance_cron(tx: Sender<CommandWrapper>, conf: Config) -> Response {
-    if conf.storage.snapshot {
+    if conf.snapshot.snapshot {
         loop {
             let (resp_tx, resp_rx) = oneshot::channel::<Response>();
     
@@ -16,7 +16,7 @@ pub async fn start_persistance_cron(tx: Sender<CommandWrapper>, conf: Config) ->
         
             let res = resp_rx.await.unwrap_or(Response::Error{msg : "Unknown Error".into()});
             println!("{}",res);
-            sleep(Duration::from_millis(conf.storage.save.unwrap_or(1000))).await;
+            sleep(Duration::from_millis(conf.snapshot.save.unwrap_or(1000))).await;
         }
         
     }

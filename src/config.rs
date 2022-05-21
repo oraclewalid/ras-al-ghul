@@ -6,13 +6,14 @@ use std::io;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Config  {
-    pub server  : ServerConfig,
-    pub storage : StorageConfig,
+    pub server      : ServerConfig,
+    pub snapshot    : SnapshotConfig,
+    pub storage     : StorageConfig,
 }
 
 impl Default for Config {
     fn default() -> Config {
-        Config { server: ServerConfig::default(), storage: StorageConfig::default() }
+        Config { server: ServerConfig::default(), snapshot: SnapshotConfig::default(), storage: StorageConfig::default() }
    }
 }
 
@@ -36,18 +37,36 @@ impl ServerConfig {
 
 
 #[derive(Debug, Deserialize, Clone)]
-pub struct StorageConfig {
+pub struct SnapshotConfig {
     pub snapshot    : bool,
     pub db_file_name: Option<String>,
     pub save        : Option<u64>,
 }
 
-impl Default for StorageConfig {
-    fn default() -> StorageConfig {
-        StorageConfig { snapshot: false, db_file_name: Some("/tmp/ras-al-ghul.db".into()), save: Some(10000) }
+impl Default for SnapshotConfig {
+    fn default() -> SnapshotConfig {
+        SnapshotConfig { snapshot: false, db_file_name: Some("/tmp/ras-al-ghul.db".into()), save: Some(10000) }
    }
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct StorageConfig {
+    pub backend   : StorageBackend,
+    pub path      : Option<String>,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq)]
+
+pub enum StorageBackend {
+    Inmemory,
+    Rocksdb
+}
+
+impl Default for StorageConfig {
+    fn default() -> StorageConfig {
+        StorageConfig { backend: StorageBackend::Inmemory, path: None}
+   }
+}
 
 
 pub fn get_config(filename: Option<String>) -> Config {
@@ -85,19 +104,23 @@ fn parse_config_in_toml_format() {
         [server]
         bind = "127.0.0.1"
         port = 80
-        [storage]
+        [snapshot]
         snapshot = true
         db_file_name = "/tmp/ras/ras-al-ghul.db"
         save = 1000
+        [storage]
+        backend = "Rocksdb"
+        path = "/tmp/rocksdb"
     "#;
-
     let config: Config=  parse_config(toml_str.into()).unwrap();
 
    assert_eq!( config.clone().server.bind, "127.0.0.1");
    assert_eq!( config.clone().server.port, 80);
-   assert_eq!( config.clone().storage.snapshot, true);
-   assert_eq!( config.clone().storage.db_file_name.unwrap(), "/tmp/ras/ras-al-ghul.db");
-   assert_eq!( config.clone().storage.save.unwrap(), 1000);
+   assert_eq!( config.clone().snapshot.snapshot, true);
+   assert_eq!( config.clone().snapshot.db_file_name.unwrap(), "/tmp/ras/ras-al-ghul.db");
+   assert_eq!( config.clone().snapshot.save.unwrap(), 1000);
+   assert_eq!( config.clone().storage.backend, StorageBackend::Rocksdb);
+   assert_eq!( config.clone().storage.path.unwrap(), "/tmp/rocksdb");
 }
 
 #[test]
@@ -108,9 +131,11 @@ fn return_default_config_if_config_file_dont_exist() {
 
    assert_eq!( config.clone().server.bind, "0.0.0.0");
    assert_eq!( config.clone().server.port, 6543);
-   assert_eq!( config.clone().storage.snapshot, true);
-   assert_eq!( config.clone().storage.db_file_name.unwrap(), "/tmp/ras-al-ghul.db");
-   assert_eq!( config.clone().storage.save.unwrap(), 10000);
+   assert_eq!( config.clone().snapshot.snapshot, false);
+   assert_eq!( config.clone().snapshot.db_file_name.unwrap(), "/tmp/ras-al-ghul.db");
+   assert_eq!( config.clone().snapshot.save.unwrap(), 10000);
+   assert_eq!( config.clone().storage.backend, StorageBackend::Inmemory);
+   assert_eq!( config.clone().storage.path, None);
 }
 
 #[test]
@@ -121,8 +146,8 @@ fn return_default_config_if_no_config_file_is_provided() {
 
    assert_eq!( config.clone().server.bind, "0.0.0.0");
    assert_eq!( config.clone().server.port, 6543);
-   assert_eq!( config.clone().storage.snapshot, true);
-   assert_eq!( config.clone().storage.db_file_name.unwrap(), "/tmp/ras-al-ghul.db");
-   assert_eq!( config.clone().storage.save.unwrap(), 10000);
+   assert_eq!( config.clone().snapshot.snapshot, false);
+   assert_eq!( config.clone().snapshot.db_file_name.unwrap(), "/tmp/ras-al-ghul.db");
+   assert_eq!( config.clone().snapshot.save.unwrap(), 10000);
 }
 

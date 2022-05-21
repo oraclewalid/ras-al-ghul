@@ -67,11 +67,11 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
 
             },
             Command::Save => {
-                if conf.storage.snapshot == true {
-                    let persistance = db.persist(conf.storage.clone().db_file_name.unwrap());
+                if conf.snapshot.snapshot == true {
+                    let persistance = db.persist(conf.snapshot.clone().db_file_name.unwrap());
                     match persistance {
                         Ok(()) =>  {
-                            println!("DB persisted on {}", conf.storage.clone().db_file_name.unwrap());
+                            println!("DB persisted on {}", conf.snapshot.clone().db_file_name.unwrap());
                             Response::OK
                         },
                         _  =>  Response::Error{msg : "ERROR, the database was not persisted".into()},
@@ -94,9 +94,9 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
 }
 
 fn load_db_or_create_new(conf: Config) -> InMemoryDatabase {
-    if conf.storage.snapshot == true {
-        println!("Loading snapshot from {}", conf.storage.clone().db_file_name.unwrap());
-        let db_result = InMemoryDatabase::load(conf.storage.clone().db_file_name.unwrap());
+    if conf.snapshot.snapshot == true {
+        println!("Loading snapshot from {}", conf.snapshot.clone().db_file_name.unwrap());
+        let db_result = InMemoryDatabase::load(conf.snapshot.clone().db_file_name.unwrap());
         match db_result {
             Ok(db) =>  db,
             _  =>  panic!("Can't deserialize DB!"),
