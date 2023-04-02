@@ -69,7 +69,7 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
             },
             Command::Save => {
                 if conf.snapshot.snapshot == true {
-                    let persistance =  Err("");  //db.persist(conf.snapshot.clone().db_file_name.unwrap());
+                    let persistance =  Err("Not implemented yet");  //db.persist(conf.snapshot.clone().db_file_name.unwrap());
                     match persistance {
                         Ok(()) =>  {
                             println!("DB persisted on {}", conf.snapshot.clone().db_file_name.unwrap());
