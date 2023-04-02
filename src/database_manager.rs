@@ -3,12 +3,13 @@ use serde_cbor::Error;
 
 use crate::config::Config;
 use crate::protocol::*;
-use crate::database::InMemoryDatabase;
+use crate::database::*;
 use rand::prelude::*;
+
 
 pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
 
-    let mut db = load_db_or_create_new(conf.clone());
+    let mut db = get_storage_backend(conf.storage.clone());
 
     while let Some(cmd_wrapper) = rx.recv().await {
 
@@ -40,7 +41,7 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
             },
             Command::Incrby{key, value} => {
                 let db_value = db.get(&key)
-                        .or(Some(&String::from("0")))
+                        .or(Some(String::from("0")))
                         .and_then(|value | value.parse::<i64>().ok());
                 match db_value {
                     Some(db_value) =>{
@@ -54,7 +55,7 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
             },
             Command::Incr{key} => {
                 let db_value = db.get(&key)
-                    .or(Some(&String::from("0")))
+                    .or(Some(String::from("0")))
                     .and_then(|value | value.parse::<i64>().ok());
                 match db_value {
                     Some(db_value) => {
@@ -68,7 +69,7 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
             },
             Command::Save => {
                 if conf.snapshot.snapshot == true {
-                    let persistance = db.persist(conf.snapshot.clone().db_file_name.unwrap());
+                    let persistance =  Err("");  //db.persist(conf.snapshot.clone().db_file_name.unwrap());
                     match persistance {
                         Ok(()) =>  {
                             println!("DB persisted on {}", conf.snapshot.clone().db_file_name.unwrap());
