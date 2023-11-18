@@ -105,8 +105,8 @@ impl  StorageBackend for RocksDB  {
 pub fn get_storage_backend(storage_config: StorageConfig) -> Box<dyn StorageBackend + Send> {
     println!("Backend storage {:?}", storage_config.clone());
     match storage_config.backend {
-        Inmemory => Box::new(InMemoryDatabase::new()),
-        Rocksdb => Box::new(RocksDB::new(storage_config.path.unwrap_or_default())),
+        _Inmemory => Box::new(InMemoryDatabase::new()),
+        _Rocksdb => Box::new(RocksDB::new(storage_config.path.unwrap_or_default())),
     }
 }
 
