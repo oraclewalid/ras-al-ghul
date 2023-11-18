@@ -64,7 +64,7 @@ pub enum StorageBackend {
 
 impl Default for StorageConfig {
     fn default() -> StorageConfig {
-        StorageConfig { backend: StorageBackend::Inmemory, path: None}
+        StorageConfig { backend: StorageBackend::Rocksdb, path: Some(("/tmp/rock.db".to_string()))}
    }
 }
 
