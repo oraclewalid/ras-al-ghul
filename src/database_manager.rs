@@ -82,6 +82,10 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
                 }
 
             },
+            Command::Config{subcommand, parameter} => {
+                // Disable CONFIG command - just return empty array
+                Response::Config{values: vec![]}
+            },
             _ => Response::Error{msg : "Unknown command".into()}
         };
 

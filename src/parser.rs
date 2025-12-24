@@ -1,4 +1,4 @@
-use std::io::{Read, BufReader, Error};
+use std::io::{Read, BufReader, Error, Cursor};
 use resp::{Value, encode, encode_slice, Decoder};
 
 use crate::Command;
@@ -9,6 +9,29 @@ use crate::Response;
 fn parse_resp(bytes: &[u8]) -> Result<Value, Error> {
     let mut decoder = Decoder::new(BufReader::new(bytes));
     return decoder.decode();
+}
+
+pub fn parse_multiple_commands(bytes: &[u8]) -> Vec<Command> {
+    let mut commands = Vec::new();
+    let mut cursor = Cursor::new(bytes);
+
+    loop {
+        let position_before = cursor.position() as usize;
+
+        if position_before >= bytes.len() {
+            break;
+        }
+
+        let mut decoder = Decoder::new(BufReader::new(&mut cursor));
+        match decoder.decode() {
+            Ok(value) => {
+                commands.push(map_resp_to_cmd(value));
+            }
+            Err(_) => break,
+        }
+    }
+
+    commands
 }
 
 fn map_resp_to_cmd(resp_value: Value) -> Command{
@@ -35,14 +58,14 @@ fn map_values_to_cmd(resp_value: Vec<Value>) -> Command {
         [Value::Bulk(cmd)] if cmd.to_lowercase() == PING => Command::Ping,
         [Value::Bulk(cmd)] if cmd.to_lowercase() == COMMAND => Command::Command,
         [Value::Bulk(cmd)] if cmd.to_lowercase() == SAVE => Command::Save,
+        [Value::Bulk(cmd), Value::Bulk(subcommand)] if cmd.to_lowercase() == CONFIG => Command::Config{subcommand: subcommand.clone(), parameter: None},
+        [Value::Bulk(cmd), Value::Bulk(subcommand), Value::Bulk(parameter)] if cmd.to_lowercase() == CONFIG => Command::Config{subcommand: subcommand.clone(), parameter: Some(parameter.clone())},
         _ => Command::Error{msg : UNKNOWN_ERROR.into()},
     }
 }
 
 
 pub fn parse_and_map_to_command(bytes: &[u8]) -> Command {
-    let value = parse_resp(bytes);
-    dbg!(value.unwrap());
     parse_resp(bytes).map (|value| map_resp_to_cmd(value)).unwrap_or(Command::Error{msg : "".into()})
 }
 
@@ -51,6 +74,10 @@ pub fn map_response_to_resp(response: Response) -> Value {
         Response::Get{value}    => Value::String(value),
         Response::OK                   => Value::String(OK.into()),
         Response::Pong                 => Value::String(PONG.into()),
+        Response::Config{values}       => {
+            let bulk_values: Vec<Value> = values.into_iter().map(|v| Value::Bulk(v)).collect();
+            Value::Array(bulk_values)
+        },
         Response::Error{msg}    => Value::Error(msg),
     }
 }
@@ -63,6 +90,7 @@ const PING: &str            = "ping";
 const PONG: &str            = "pong";
 const OK: &str              = "ok";
 const COMMAND: &str         = "command";
+const CONFIG: &str          = "config";
 const UNKNOWN_ERROR: &str   = "Unknown error";
 const SAVE: &str   = "save";
 

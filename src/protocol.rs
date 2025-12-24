@@ -18,6 +18,10 @@ pub enum Command {
         value: i64,
     },
     Command,
+    Config {
+        subcommand: String,
+        parameter: Option<String>,
+    },
     Error{
         msg: String
     },
@@ -36,6 +40,9 @@ pub enum Response {
         value: String,
     },
     OK,
+    Config {
+        values: Vec<String>,
+    },
     Error{
         msg: String
     }

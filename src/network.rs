@@ -11,22 +11,33 @@ pub async fn process(mut socket: TcpStream, tx: Sender<CommandWrapper>) {
 
     let mut buf = vec![0; 4*1024];
 
-    let n = socket
-        .read(&mut buf)
-        .await
-        .expect("failed to read data from socket");
+    loop {
+        let n = match socket.read(&mut buf).await {
+            Ok(0) => {
+                // Connection closed by client
+                return;
+            }
+            Ok(n) => n,
+            Err(e) => {
+                eprintln!("Failed to read data from socket: {}", e);
+                return;
+            }
+        };
 
-    let cmd = parse_and_map_to_command(&buf[0..(n)]);
+        // Parse all commands from the buffer (handles pipelining)
+        let commands = parse_multiple_commands(&buf[0..n]);
 
-    let res = send_command(tx, cmd).await;
-    let value = map_response_to_resp(res);
+        // Process each command and collect responses
+        for cmd in commands {
+            let res = send_command(tx.clone(), cmd).await;
+            let value = map_response_to_resp(res);
 
-    socket
-        .write_all(value.encode().as_slice())
-        .await
-        .expect("failed to write data to socket");
-    
-    //tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
+            if let Err(e) = socket.write_all(value.encode().as_slice()).await {
+                eprintln!("Failed to write data to socket: {}", e);
+                return;
+            }
+        }
+    }
 }
 
 async fn send_command(tx: Sender<CommandWrapper>, cmd: Command) -> Response {
