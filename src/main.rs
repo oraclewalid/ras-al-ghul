@@ -8,6 +8,8 @@ use std::env;
 mod protocol;
 use protocol::*;
 
+mod telemetry;
+
 mod database;
 
 mod parser;
@@ -26,9 +28,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let conf = config::get_config(addr);
 
+    telemetry::init();
+
     let listener = TcpListener::bind(conf.server.to_server_with_port()).await?;
 
-    println!("Listening on: {}", conf.server.to_server_with_port());
+    tracing::info!("Listening on: {}", conf.server.to_server_with_port());
 
     let (tx, rx) = mpsc::channel::<CommandWrapper>(32);
     let tx2 = tx.clone();

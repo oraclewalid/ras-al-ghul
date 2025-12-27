@@ -15,7 +15,7 @@ pub async fn start_persistance_cron(tx: Sender<CommandWrapper>, conf: Config) ->
             let send = tx.send(CommandWrapper{ cmd : Command::Save, resp : resp_tx}).await;
         
             let res = resp_rx.await.unwrap_or(Response::Error{msg : "Unknown Error".into()});
-            println!("{}",res);
+            tracing::info!("{:?}", res);
             sleep(Duration::from_millis(conf.snapshot.save.unwrap_or(1000))).await;
         }
         
