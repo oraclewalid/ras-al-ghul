@@ -3,25 +3,14 @@ use std::fmt;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Command {
     Ping,
-    Get {
-        key: String,
-    },
-    Set {
-        key: String,
-        value: String,
-    },
-    Incr {
-        key: String,
-    },
-    Incrby {
-        key: String,
-        value: i64,
-    },
+    Get { key: String },
+    Set { key: String, value: String },
+    Incr { key: String },
+    Incrby { key: String, value: i64 },
     Command,
-    Error{
-        msg: String
-    },
-    Save
+    Error { msg: String },
+    Save,
+    Config,
 }
 
 impl fmt::Display for Command {
@@ -32,13 +21,9 @@ impl fmt::Display for Command {
 #[derive(Debug)]
 pub enum Response {
     Pong,
-    Get {
-        value: String,
-    },
+    Get { value: String },
     OK,
-    Error{
-        msg: String
-    }
+    Error { msg: String },
 }
 
 impl fmt::Display for Response {
