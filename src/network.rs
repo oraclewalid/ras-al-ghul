@@ -36,6 +36,6 @@ async fn send_command(tx: Sender<CommandWrapper>, cmd: Command) -> Response {
     let send = tx.send(CommandWrapper{ cmd : cmd, resp : resp_tx}).await;
 
     let res = resp_rx.await.unwrap_or(Response::Error{msg : "".into()});
-    println!("{}",res);
+    tracing::info!("{:?}", res);
     res
 }

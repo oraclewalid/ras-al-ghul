@@ -15,7 +15,7 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
         let cmd = cmd_wrapper.cmd;
         let rx = cmd_wrapper.resp;
 
-        println!("Receive command {}", cmd.clone());
+        tracing::debug!("Receive command {:?}", cmd.clone());
 
         let response = match cmd {
             Command::Ping => Response::Pong,
@@ -71,7 +71,7 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
                     let persistance = db.persist(conf.snapshot.clone().db_file_name.unwrap());
                     match persistance {
                         Ok(()) =>  {
-                            println!("DB persisted on {}", conf.snapshot.clone().db_file_name.unwrap());
+                            tracing::info!("DB persisted on {}", conf.snapshot.clone().db_file_name.unwrap());
                             Response::OK
                         },
                         _  =>  Response::Error{msg : "ERROR, the database was not persisted".into()},
@@ -87,15 +87,15 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
 
         let sent_response = rx.send(response);
         match sent_response {
-            Result::Ok(_) => println!("Response sent"),
-            Result::Err(error) => println!("Error in message sent {}", error)
+            Result::Ok(_) => tracing::debug!("Response sent"),
+            Result::Err(error) => tracing::error!("Error in message sent {}", error)
         }
     }
 }
 
 fn load_db_or_create_new(conf: Config) -> InMemoryDatabase {
     if conf.snapshot.snapshot == true {
-        println!("Loading snapshot from {}", conf.snapshot.clone().db_file_name.unwrap());
+        tracing::info!("Loading snapshot from {}", conf.snapshot.clone().db_file_name.unwrap());
         let db_result = InMemoryDatabase::load(conf.snapshot.clone().db_file_name.unwrap());
         match db_result {
             Ok(db) =>  db,
