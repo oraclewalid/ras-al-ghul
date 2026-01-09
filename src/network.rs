@@ -9,8 +9,7 @@ use crate::protocol::*;
 pub async fn process(mut socket: TcpStream, tx: Sender<CommandWrapper>) {
     let mut buf = vec![0; 4 * 1024];
 
-    let var_name = true;
-    while var_name {
+    loop {
         let n = socket
             .read(&mut buf)
             .await

@@ -1,8 +1,6 @@
-
-use std::{error::Error};
-use tokio::net::{TcpListener};
+use std::error::Error;
+use tokio::net::TcpListener;
 use tokio::sync::mpsc;
-
 
 use std::env;
 mod protocol;
@@ -14,17 +12,14 @@ mod database;
 
 mod parser;
 
-mod database_manager;
 mod config;
+mod database_manager;
 mod network;
 mod scheduler;
 
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-
-    let addr = env::args()
-        .nth(1);
+    let addr = env::args().nth(1);
 
     let conf = config::get_config(addr);
 
@@ -37,7 +32,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let (tx, rx) = mpsc::channel::<CommandWrapper>(32);
     let tx2 = tx.clone();
     let conf2 = conf.clone();
-    tokio::spawn(async move { database_manager::start_memory_manager(rx, conf.clone()).await });
+    tokio::spawn(async move { database_manager::start_memory_manager(rx, &conf).await });
     tokio::spawn(async move { scheduler::start_persistance_cron(tx2, conf2).await });
 
     loop {

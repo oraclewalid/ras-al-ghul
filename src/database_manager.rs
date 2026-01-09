@@ -1,17 +1,14 @@
-
 use serde_cbor::Error;
 
 use crate::config::Config;
-use crate::protocol::*;
 use crate::database::InMemoryDatabase;
+use crate::protocol::*;
 use rand::prelude::*;
 
-pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
-
-    let mut db = load_db_or_create_new(conf.clone());
+pub async fn start_memory_manager(mut rx: CommandReceiver, conf: &Config) {
+    let mut db = load_db_or_create_new(conf);
 
     while let Some(cmd_wrapper) = rx.recv().await {
-
         let cmd = cmd_wrapper.cmd;
         let rx = cmd_wrapper.resp;
 
@@ -19,91 +16,108 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: Config) {
 
         let response = match cmd {
             Command::Ping => Response::Pong,
-            Command::Set{key, value} => {
-                db.set(key, value) ;
+            Command::Set { key, value } => {
+                db.set(key, value);
                 Response::OK
-            },
-            Command::Get{key} => {
+            }
+            Command::Get { key } => {
                 if key.eq("__rand_int__") {
-                    let mut rng = rand::thread_rng();
                     let random_int: u8 = random();
-                    Response::Get{value: random_int.to_string()}
+                    Response::Get {
+                        value: random_int.to_string(),
+                    }
                 } else {
-                    
-                    let value = db.get(&key.clone());
+                    let value: Option<&String> = db.get(&key);
                     match value {
-                        Some(value ) => Response::Get{value: value.clone()},
-                        None => Response::Error{msg : format!("The key {} not found", key)}
+                        Some(value) => Response::Get { value: value.into() },
+                        None => Response::Error {
+                            msg: format!("The key {} not found", key),
+                        },
                     }
                 }
-
-            },
-            Command::Incrby{key, value} => {
-                let db_value = db.get(&key)
-                        .or(Some(&String::from("0")))
-                        .and_then(|value | value.parse::<i64>().ok());
+            }
+            Command::Incrby { key, value } => {
+                let db_value = db
+                    .get(&key)
+                    .or(Some(&String::from("0")))
+                    .and_then(|value| value.parse::<i64>().ok());
                 match db_value {
-                    Some(db_value) =>{
+                    Some(db_value) => {
                         let new_value = db_value + value;
                         db.set(key, new_value.to_string());
-                        Response::Get{value: new_value.to_string()}
+                        Response::Get {
+                            value: new_value.to_string(),
+                        }
+                    }
+                    None => Response::Error {
+                        msg: "ERR value is not an integer or out of range".into(),
                     },
-                    None  =>  Response::Error{msg : "ERR value is not an integer or out of range".into()}
                 }
-
-            },
-            Command::Incr{key} => {
-                let db_value = db.get(&key)
+            }
+            Command::Incr { key } => {
+                let db_value = db
+                    .get(&key)
                     .or(Some(&String::from("0")))
-                    .and_then(|value | value.parse::<i64>().ok());
+                    .and_then(|value| value.parse::<i64>().ok());
                 match db_value {
                     Some(db_value) => {
                         let new_value = db_value + 1;
                         db.set(key, new_value.to_string());
-                        Response::Get{value: new_value.to_string()}
+                        Response::Get {
+                            value: new_value.to_string(),
+                        }
+                    }
+                    None => Response::Error {
+                        msg: "ERR value is not an integer or out of range".into(),
                     },
-                    None  =>  Response::Error{msg : "ERR value is not an integer or out of range".into()}
                 }
-
-            },
+            }
             Command::Save => {
                 if conf.snapshot.snapshot == true {
                     let persistance = db.persist(conf.snapshot.clone().db_file_name.unwrap());
                     match persistance {
-                        Ok(()) =>  {
-                            tracing::info!("DB persisted on {}", conf.snapshot.clone().db_file_name.unwrap());
+                        Ok(()) => {
+                            tracing::info!(
+                                "DB persisted on {}",
+                                conf.snapshot.clone().db_file_name.unwrap()
+                            );
                             Response::OK
+                        }
+                        _ => Response::Error {
+                            msg: "ERROR, the database was not persisted".into(),
                         },
-                        _  =>  Response::Error{msg : "ERROR, the database was not persisted".into()},
+                    }
+                } else {
+                    Response::Error {
+                        msg: "ERROR, snapshot of DB is not activated".into(),
                     }
                 }
-                else {
-                    Response::Error{msg : "ERROR, snapshot of DB is not activated".into()}
-                }
-
+            }
+            _ => Response::Error {
+                msg: "Unknown command".into(),
             },
-            _ => Response::Error{msg : "Unknown command".into()}
         };
 
         let sent_response = rx.send(response);
         match sent_response {
             Result::Ok(_) => tracing::debug!("Response sent"),
-            Result::Err(error) => tracing::error!("Error in message sent {}", error)
+            Result::Err(error) => tracing::error!("Error in message sent {}", error),
         }
     }
 }
 
-fn load_db_or_create_new(conf: Config) -> InMemoryDatabase {
+fn load_db_or_create_new(conf: &Config) -> InMemoryDatabase {
     if conf.snapshot.snapshot == true {
-        tracing::info!("Loading snapshot from {}", conf.snapshot.clone().db_file_name.unwrap());
-        let db_result = InMemoryDatabase::load(conf.snapshot.clone().db_file_name.unwrap());
+        tracing::info!(
+            "Loading snapshot from {}",
+            conf.snapshot.db_file_name.clone().unwrap()
+        );
+        let db_result = InMemoryDatabase::load(conf.snapshot.db_file_name.clone().unwrap());
         match db_result {
-            Ok(db) =>  db,
-            _  =>  panic!("Can't deserialize DB!"),
+            Ok(db) => db,
+            _ => panic!("Can't deserialize DB!"),
         }
-    }
-    else {
+    } else {
         InMemoryDatabase::new()
     }
-    
 }
