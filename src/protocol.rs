@@ -6,7 +6,7 @@ pub enum Command {
     Get { key: String },
     Set { key: String, value: String },
     Incr { key: String },
-    Incrby { key: String, value: i64 },
+    IncrBy { key: String, value: i64 },
     Command,
     Error { msg: String },
     Save,

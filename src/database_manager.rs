@@ -27,7 +27,7 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: &Config) {
                         value: random_int.to_string(),
                     }
                 } else {
-                    let value: Option<&String> = db.get(&key);
+                    let value = db.get(&key);
                     match value {
                         Some(value) => Response::Get { value: value.into() },
                         None => Response::Error {
@@ -36,7 +36,7 @@ pub async fn start_memory_manager(mut rx: CommandReceiver, conf: &Config) {
                     }
                 }
             }
-            Command::Incrby { key, value } => {
+            Command::IncrBy { key, value } => {
                 let db_value = db
                     .get(&key)
                     .or(Some(&String::from("0")))

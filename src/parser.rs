@@ -43,7 +43,7 @@ fn map_values_to_cmd(resp_value: Vec<Value>) -> Command {
         {
             let value = value.parse::<i64>();
             match value {
-                Ok(value) => Command::Incrby {
+                Ok(value) => Command::IncrBy {
                     key: key.clone(),
                     value: value.clone(),
                 },
